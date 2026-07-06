@@ -1,0 +1,38 @@
+name: YouTube SEO Spy Bot
+
+on:
+  schedule:
+    # S'exécute automatiquement tous les lundis à 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch: # Permet de le lancer manuellement en un clic sur GitHub
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Extraction du code
+      uses: actions/checkout@v4
+
+    - name: Configuration de Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Installation des dépendances
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Exécution de l'analyseur SEO
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      run: python app.py
+
+    - name: Sauvegarde et Push du rapport sur GitHub
+      run: |
+        git config --global user.name "SEO-Automation-Bot"
+        git config --global user.email "bot@seo.com"
+        git add briefing_seo.md
+        git commit -m "Mise à jour automatique des tendances SEO [skip ci]" || exit 0
+        git push
